@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Weekend Mountain Forecast</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Helps reduce stale caching on many browsers -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+
+  <style>
+    body {
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      max-width: 920px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      line-height: 1.5;
+      white-space: pre-wrap;
+    }
+  </style>
+
+  <script>
+    // Cache-buster: ensures you get a fresh copy even on aggressive mobile caches.
+    // It keeps the shareable "base" URL working; it just adds ?t=... once.
+    (function () {
+      const url = new URL(window.location.href);
+      if (!url.searchParams.has("t")) {
+        url.searchParams.set("t", Date.now().toString());
+        window.location.replace(url.toString());
+      }
+    })();
+  </script>
+</head>
+<body>
+{{CONTENT}}
+</body>
+</html>
