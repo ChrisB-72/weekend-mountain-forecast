@@ -5,7 +5,6 @@
   <title>Weekend Mountain Forecast</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <!-- Helps reduce stale caching on many browsers -->
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
@@ -22,8 +21,6 @@
   </style>
 
   <script>
-    // Cache-buster: ensures you get a fresh copy even on aggressive mobile caches.
-    // It keeps the shareable "base" URL working; it just adds ?t=... once.
     (function () {
       const url = new URL(window.location.href);
       if (!url.searchParams.has("t")) {
@@ -34,37 +31,37 @@
   </script>
 </head>
 <body>
-Weekend Mountain Forecast  
-27th / 28th December  
+Weekend Mountain Forecast
+27th / 28th December
 Confidence: Moderate
-Last updated: 2025-12-23 13:29 UTC
+Last updated: 2025-12-23 14:02 UTC
 
 Peak District  
-Rain: 60% chance light rain at times, driest early Saturday.  
-Wind: 20-30 mph, gusts 40 mph on exposed tops.  
-Temp: Valley 7°C; summit 2°C, feels like -4°C.  
-Cloud: Cloud base ~600 m, patches down to 400 m in rain.  
-Freezing level: ~1000 m, lowering to 800 m Sunday.
+Rain: 20% (20–20%) chance, occasional patchy drizzle, mainly dry  
+Wind: 25 mph (15–35 mph) on tops, strong/gusty easterlies with local buffeting  
+Temp: Valleys 6°C (3–6°C); summits 2°C (0–3°C) (feels like -4°C (-13–-4°C))  
+Cloud: Cloud base ~400 m (~300–500 m), extensive low cloud/fog, some clearing later  
+Freezing level: ~1000 m (~400–2000 m), falling, could reach 400 m by night
 
 Snowdonia  
-Rain: 70% chance persistent rain, heavy bursts possible, especially Saturday.  
-Wind: 30-40 mph, gusts 55 mph higher ridges.  
-Temp: Valley 6°C; summit 1°C, feels like -7°C.  
-Cloud: Cloud base ~700 m, extensive above 500 m with occasional breaks.  
-Freezing level: ~900 m dropping to 700 m late Sunday.
+Rain: <5% (<5%–10%) chance patchy drizzle, mostly east, little accumulation  
+Wind: 25 mph (15–35 mph) on tops, strong easterly, gusty and blustery in exposure  
+Temp: Valleys 7°C (2–9°C); summits 1°C (0–5°C) (feels like -1°C (-7–1°C))  
+Cloud: Cloud base ~400 m (~400–700 m), extensive early with some breaks west, lifting later  
+Freezing level: ~800 m (~400–2,000 m), lowering during day, possibly 400 m by evening
 
 Brecon Beacons  
-Rain: 50% chance showers, some heavy Saturday afternoon.  
-Wind: 25-35 mph, gusts 45 mph exposed tops.  
-Temp: Valley 7°C; summit 2°C, feels like -5°C.  
-Cloud: Cloud base ~700 m, frequent patches 400-500 m in showers.  
-Freezing level: ~1000 m, lowering to 800 m by late Sunday.
+Rain: <5% (5–10%) chance Patchy light rain or drizzle at times, but often dry.  
+Wind: 25 mph (20–40 mph) on tops Strong, gusty easterlies; blustery, may affect balance on exposed ridges.  
+Temp: Valleys 7°C (2–7°C); summits 1°C (0–6°C) (feels like -6°C (-6–1°C))  
+Cloud: Cloud base ~400 m (~400–600 m), Extensive low cloud with bases lifting; best breaks western slopes.  
+Freezing level: ~400 m (~400–2100 m), Falling to around main summits, lowest in the east.
 
 Lake District  
-Rain: 80% chance frequent rain, heaviest Saturday night.  
-Wind: 35-45 mph, gusts 60+ mph ridges, particularly Saturday.  
-Temp: Valley 6°C; summit 0°C, feels like -8°C.  
-Cloud: Cloud base ~600 m, widespread lowering below 400 m in precipitation.  
-Freezing level: ~900 m, dropping to 700 m Sunday evening.
+Rain: 0% (0–5%) chance dry or very isolated drizzle east  
+Wind: 20 mph (15–25 mph) on tops, strong/gusty in exposure  
+Temp: Valleys 6°C (5–8°C); summits 0°C (0–5°C) (feels like -4°C (-6–0°C))  
+Cloud: Cloud base ~700 m (~700–800 m), patchy caps mainly east, clearing for many  
+Freezing level: ~800 m (~400–2000 m), lowering through weekend, risk frost/touch of ice higher slopes
 </body>
 </html>
