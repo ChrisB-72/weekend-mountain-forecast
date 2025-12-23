@@ -1,4 +1,70 @@
 <!doctype html>
-<html>
-  <body>Forecast will appear here after the first automation run.</body>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Weekend Mountain Forecast</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Helps reduce stale caching on many browsers -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+
+  <style>
+    body {
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      max-width: 920px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      line-height: 1.5;
+      white-space: pre-wrap;
+    }
+  </style>
+
+  <script>
+    // Cache-buster: ensures you get a fresh copy even on aggressive mobile caches.
+    // It keeps the shareable "base" URL working; it just adds ?t=... once.
+    (function () {
+      const url = new URL(window.location.href);
+      if (!url.searchParams.has("t")) {
+        url.searchParams.set("t", Date.now().toString());
+        window.location.replace(url.toString());
+      }
+    })();
+  </script>
+</head>
+<body>
+Weekend Mountain Forecast  
+27th / 28th December  
+Confidence: Moderate
+Last updated: 2025-12-23 13:29 UTC
+
+Peak District  
+Rain: 60% chance light rain at times, driest early Saturday.  
+Wind: 20-30 mph, gusts 40 mph on exposed tops.  
+Temp: Valley 7°C; summit 2°C, feels like -4°C.  
+Cloud: Cloud base ~600 m, patches down to 400 m in rain.  
+Freezing level: ~1000 m, lowering to 800 m Sunday.
+
+Snowdonia  
+Rain: 70% chance persistent rain, heavy bursts possible, especially Saturday.  
+Wind: 30-40 mph, gusts 55 mph higher ridges.  
+Temp: Valley 6°C; summit 1°C, feels like -7°C.  
+Cloud: Cloud base ~700 m, extensive above 500 m with occasional breaks.  
+Freezing level: ~900 m dropping to 700 m late Sunday.
+
+Brecon Beacons  
+Rain: 50% chance showers, some heavy Saturday afternoon.  
+Wind: 25-35 mph, gusts 45 mph exposed tops.  
+Temp: Valley 7°C; summit 2°C, feels like -5°C.  
+Cloud: Cloud base ~700 m, frequent patches 400-500 m in showers.  
+Freezing level: ~1000 m, lowering to 800 m by late Sunday.
+
+Lake District  
+Rain: 80% chance frequent rain, heaviest Saturday night.  
+Wind: 35-45 mph, gusts 60+ mph ridges, particularly Saturday.  
+Temp: Valley 6°C; summit 0°C, feels like -8°C.  
+Cloud: Cloud base ~600 m, widespread lowering below 400 m in precipitation.  
+Freezing level: ~900 m, dropping to 700 m Sunday evening.
+</body>
 </html>
