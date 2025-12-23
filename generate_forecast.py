@@ -1,7 +1,7 @@
 import os
 import re
 from datetime import date, timedelta, datetime, timezone
-from typing import Dict, List, Tuple, Optional
+from typing import List, Optional, Tuple
 
 import requests
 from openai import OpenAI
@@ -9,10 +9,8 @@ from openai import OpenAI
 MODEL = os.getenv("OPENAI_MODEL", "gpt-4.1")
 TIMEOUT_SECS = 20
 
-# Prefer MWIS + Met Office for "current/best" values
 SOURCE_PRIORITY = ["mwis", "metoffice", "windy", "mountainforecast"]
 
-# Keep inputs small (tune if needed)
 MAX_CHARS = {
     "mwis": 9000,
     "metoffice": 9000,
@@ -47,12 +45,12 @@ URLS = {
     },
 }
 
-
-def upcoming_weekend_dates() -> str:
+def upcoming_weekend_dates() -> Tuple[str, str, str]:
+    """Returns (display_dates, saturday_label, sunday_label)"""
     today = date.today()
     days_until_sat = (5 - today.weekday()) % 7
-    saturday = today + timedelta(days=days_until_sat)
-    sunday = saturday + timedelta(days=1)
+    sat = today + timedelta(days=days_until_sat)
+    sun = sat + timedelta(days=1)
 
     def ordinal(n: int) -> str:
         if 10 <= n % 100 <= 20:
@@ -61,34 +59,27 @@ def upcoming_weekend_dates() -> str:
             suffix = {1: "st", 2: "nd", 3: "rd"}.get(n % 10, "th")
         return f"{n}{suffix}"
 
-    return f"{ordinal(saturday.day)} / {ordinal(sunday.day)} {saturday.strftime('%B')}"
-
+    display = f"{ordinal(sat.day)} / {ordinal(sun.day)} {sat.strftime('%B')}"
+    sat_label = f"{sat.strftime('%A')} {ordinal(sat.day)} {sat.strftime('%B')}"
+    sun_label = f"{sun.strftime('%A')} {ordinal(sun.day)} {sun.strftime('%B')}"
+    return display, sat_label, sun_label
 
 def strip_html(html: str) -> str:
-    # Remove scripts/styles
     html = re.sub(r"(?is)<script.*?>.*?</script>", " ", html)
     html = re.sub(r"(?is)<style.*?>.*?</style>", " ", html)
-    # Remove tags
     text = re.sub(r"(?s)<.*?>", " ", html)
-    # Unescape common entities lightly (keep it simple)
     text = text.replace("&nbsp;", " ").replace("&amp;", "&").replace("&lt;", "<").replace("&gt;", ">")
-    # Collapse whitespace
-    text = re.sub(r"\s+", " ", text).strip()
-    return text
-
+    return re.sub(r"\s+", " ", text).strip()
 
 def fetch_text(url: str) -> Tuple[bool, str]:
     try:
-        headers = {
-            "User-Agent": "Mozilla/5.0 (compatible; WeekendMountainForecastBot/1.0; +https://github.com/)"
-        }
+        headers = {"User-Agent": "Mozilla/5.0 (compatible; WeekendMountainForecastBot/1.0; +https://github.com/)"}
         r = requests.get(url, headers=headers, timeout=TIMEOUT_SECS)
         if r.status_code >= 400:
             return False, f"[HTTP {r.status_code}] {url}"
         return True, strip_html(r.text)
     except Exception as e:
         return False, f"[FETCH ERROR: {e}] {url}"
-
 
 def build_region_sources_blob(region: str) -> str:
     parts: List[str] = [f"=== REGION: {region} ==="]
@@ -103,20 +94,18 @@ def build_region_sources_blob(region: str) -> str:
         parts.append(text[:cap])
     return "\n".join(parts)
 
-
-def ask_region(client: OpenAI, region: str, dates: str, sources_blob: str) -> Optional[str]:
-    # Single-region prompt to keep token usage low
+def ask_region_day(client: OpenAI, region: str, day_name: str, dates_display: str, sources_blob: str) -> Optional[str]:
     prompt = f"""
-You are generating ONE REGION section for a weekend mountain forecast.
+You are generating ONE REGION section for ONE DAY of a weekend mountain forecast.
 
-DATE:
-{dates}
+WEEKEND DATE RANGE (for context): {dates_display}
+DAY TO REPORT: {day_name}
 
 SOURCES (best-effort extracted text; may be incomplete):
 {sources_blob}
 
 TASK:
-Return ONLY the {region} section in EXACTLY this 6-line format:
+Return ONLY the {region} section for {day_name} in EXACTLY this 6-line format:
 
 {region}
 Rain: <current%> (<min%–max%>) chance <brief>
@@ -126,8 +115,8 @@ Cloud: Cloud base ~<current m> (~<min–max m>), <brief>
 Freezing level: ~<current m> (~<min–max m>), <brief>
 
 RULES:
-- Use the sources above ONLY. If a value isn't present, treat it as missing.
-- Min/max are the LOWEST and HIGHEST values extracted from any INDIVIDUAL SOURCE that provides that metric.
+- Use the sources above ONLY. If a value isn't present for that day, treat it as missing.
+- Min/max are the LOWEST and HIGHEST values extracted from any INDIVIDUAL SOURCE that provides that metric for that day.
 - Choose the "current/best" value by prioritising MWIS then Met Office; if they disagree, choose the more conservative (worse) for safety.
 - Windy/Mountain-Forecast: use only if clearly extractable; never invent.
 - If only one source provides a value, use (value–value).
@@ -144,73 +133,62 @@ RULES:
         txt = (resp.choices[0].message.content or "").strip()
         return txt if txt else None
     except Exception as e:
-        print(f"Region generation failed for {region}: {e}")
+        print(f"Region/day generation failed for {region} {day_name}: {e}")
         return None
 
-
-def insert_last_updated(full_text: str, updated_utc: str, dates: str) -> str:
-    lines = full_text.splitlines()
-    out = []
-    inserted = False
-    for line in lines:
-        out.append(line)
-        if not inserted and line.startswith("Confidence:"):
-            out.append(f"Last updated: {updated_utc}")
-            inserted = True
-    if not inserted:
-        # add after date line if missing
-        if len(out) >= 2:
-            out.insert(2, "Confidence: Moderate")
-            out.insert(3, f"Last updated: {updated_utc}")
-    return "\n".join(out)
-
-
 def main() -> int:
-    # failure-safe: don't overwrite index.html on failure
     api_key = os.environ.get("OPENAI_API_KEY")
     if not api_key:
         print("OPENAI_API_KEY missing. Leaving existing index.html unchanged.")
         return 0
 
     client = OpenAI(api_key=api_key)
-    dates = upcoming_weekend_dates()
+
+    dates_display, sat_label, sun_label = upcoming_weekend_dates()
     updated_utc = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
 
     regions = ["Peak District", "Snowdonia", "Brecon Beacons", "Lake District"]
-    region_sections: List[str] = []
+
+    sat_sections: List[str] = []
+    sun_sections: List[str] = []
 
     for region in regions:
-        print(f"Fetching + generating region: {region}")
+        print(f"Fetching + generating: {region}")
         sources_blob = build_region_sources_blob(region)
-        sec = ask_region(client, region, dates, sources_blob)
-        if not sec:
-            print(f"No output for {region}; leaving existing index.html unchanged.")
+
+        sat = ask_region_day(client, region, "Saturday", dates_display, sources_blob)
+        sun = ask_region_day(client, region, "Sunday", dates_display, sources_blob)
+
+        if not sat or not sun:
+            print("Missing output for Sat/Sun; leaving existing index.html unchanged.")
             return 0
-        region_sections.append(sec)
 
-    # Confidence is still a single line (kept simple + stable)
-    # If you want, we can compute it from coverage later.
-    full_text = "\n".join([
+        sat_sections.append(sat)
+        sun_sections.append(sun)
+
+    header_text = "\n".join([
         "Weekend Mountain Forecast",
-        dates,
+        dates_display,
         "Confidence: Moderate",
-        "",  # blank line before regions
-        "\n\n".join(region_sections),
-    ]).strip()
+        f"Last updated: {updated_utc}",
+    ])
 
-    full_text = insert_last_updated(full_text, updated_utc, dates)
+    saturday_block = "\n\n".join(sat_sections).strip()
+    sunday_block = "\n\n".join(sun_sections).strip()
 
     with open("page_template.html", "r", encoding="utf-8") as f:
         template = f.read()
 
-    html = template.replace("{{CONTENT}}", full_text)
+    html = (template
+            .replace("{{HEADER}}", header_text)
+            .replace("{{SATURDAY}}", saturday_block)
+            .replace("{{SUNDAY}}", sunday_block))
 
     with open("index.html", "w", encoding="utf-8") as f:
         f.write(html)
 
     print("Forecast generated and index.html updated.")
     return 0
-
 
 if __name__ == "__main__":
     raise SystemExit(main())
