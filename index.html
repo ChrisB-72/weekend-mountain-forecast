@@ -12,11 +12,38 @@
   <style>
     body {
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      max-width: 920px;
+      max-width: 1100px;
       margin: 2rem auto;
       padding: 0 1rem;
-      line-height: 1.5;
+      line-height: 1.45;
+    }
+    .header {
       white-space: pre-wrap;
+      margin-bottom: 1rem;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    .col {
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      padding: 1rem;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+      background: #fff;
+    }
+    .col h2 {
+      margin: 0 0 .75rem 0;
+      font-size: 1.1rem;
+    }
+    pre {
+      margin: 0;
+      white-space: pre-wrap;
+      font-family: inherit;
+    }
+    @media (max-width: 900px) {
+      .grid { grid-template-columns: 1fr; }
     }
   </style>
 
@@ -31,37 +58,72 @@
   </script>
 </head>
 <body>
-Weekend Mountain Forecast
+  <div class="header">Weekend Mountain Forecast
 27th / 28th December
 Confidence: Moderate
-Last updated: 2025-12-23 14:02 UTC
+Last updated: 2025-12-23 14:09 UTC</div>
 
-Peak District  
-Rain: 20% (20–20%) chance, occasional patchy drizzle, mainly dry  
-Wind: 25 mph (15–35 mph) on tops, strong/gusty easterlies with local buffeting  
-Temp: Valleys 6°C (3–6°C); summits 2°C (0–3°C) (feels like -4°C (-13–-4°C))  
-Cloud: Cloud base ~400 m (~300–500 m), extensive low cloud/fog, some clearing later  
-Freezing level: ~1000 m (~400–2000 m), falling, could reach 400 m by night
+  <div class="grid">
+    <div class="col">
+      <h2>Saturday</h2>
+      <pre>Peak District  
+Rain: 20% (20%–20%) chance occasional light drizzle, mostly dry  
+Wind: 25 mph (15–30 mph) on tops, easterly, gusty and feeling cold  
+Temp: Valleys 6°C (4–6°C); summits 2°C (1–3°C) (feels like -5°C (-6–-2°C))  
+Cloud: Cloud base ~400 m (~300–500 m), extensive low cloud/fog, clearer on lower western slopes  
+Freezing level: ~1000 m (~800–2000 m), falling through day
 
 Snowdonia  
-Rain: <5% (<5%–10%) chance patchy drizzle, mostly east, little accumulation  
-Wind: 25 mph (15–35 mph) on tops, strong easterly, gusty and blustery in exposure  
-Temp: Valleys 7°C (2–9°C); summits 1°C (0–5°C) (feels like -1°C (-7–1°C))  
-Cloud: Cloud base ~400 m (~400–700 m), extensive early with some breaks west, lifting later  
-Freezing level: ~800 m (~400–2,000 m), lowering during day, possibly 400 m by evening
+Rain: 10% (<5%–10%) chance patchy light rain or drizzle, mostly eastern high areas  
+Wind: 21 mph (15–26 mph) on tops, easterly, locally gusty, stronger later  
+Temp: Valleys 7°C (6–9°C); summits 3°C (0–5°C) (feels like 0°C (–1–1°C))  
+Cloud: Cloud base ~400 m (~400–600 m), extensive low cloud/fog at first, lifting later, best breaks west  
+Freezing level: ~2000 m (~1300–2000 m), falling into night, some higher slopes near freezing
 
 Brecon Beacons  
-Rain: <5% (5–10%) chance Patchy light rain or drizzle at times, but often dry.  
-Wind: 25 mph (20–40 mph) on tops Strong, gusty easterlies; blustery, may affect balance on exposed ridges.  
-Temp: Valleys 7°C (2–7°C); summits 1°C (0–6°C) (feels like -6°C (-6–1°C))  
-Cloud: Cloud base ~400 m (~400–600 m), Extensive low cloud with bases lifting; best breaks western slopes.  
-Freezing level: ~400 m (~400–2100 m), Falling to around main summits, lowest in the east.
+Rain: 10% (<5%–10%) chance occasional light drizzle, mostly dry  
+Wind: 25 mph (20–40 mph) on tops, blustery with gusts, strongest early/late  
+Temp: Valleys 7°C (2–7°C); summits 3°C (0–6°C) (feels like 1°C (–6–1°C))  
+Cloud: Cloud base ~400 m (~400–600 m), extensive low cloud and fog, some breaks west, improving later  
+Freezing level: ~600 m (~400–2100 m), falling through day, icy underfoot possible on higher ground
 
 Lake District  
-Rain: 0% (0–5%) chance dry or very isolated drizzle east  
-Wind: 20 mph (15–25 mph) on tops, strong/gusty in exposure  
-Temp: Valleys 6°C (5–8°C); summits 0°C (0–5°C) (feels like -4°C (-6–0°C))  
-Cloud: Cloud base ~700 m (~700–800 m), patchy caps mainly east, clearing for many  
-Freezing level: ~800 m (~400–2000 m), lowering through weekend, risk frost/touch of ice higher slopes
+Rain: <5% (<5%–5%) chance Dry all day, isolated fine drizzle possible eastern fells  
+Wind: 18 mph (15–25 mph) on tops, easterly, locally gusty but not impacting walking  
+Temp: Valleys 6°C (6–8°C); summits 0°C (0–5°C) (feels like -2°C (-4–0°C))  
+Cloud: Cloud base ~700 m (~700–800 m), patchy on eastern tops early, clearing, best breaks west  
+Freezing level: ~800 m (~400–2000 m), lowering through day and into evening, locally variable</pre>
+    </div>
+    <div class="col">
+      <h2>Sunday</h2>
+      <pre>Peak District  
+Rain: 20% (20%–20%) chance mainly dry, occasional patchy drizzle possible  
+Wind: 23 mph (19–30 mph) on tops, easterly, blustery and gusty over high ground  
+Temp: Valleys 5°C (4–6°C); summits 2°C (1–3°C) (feels like -4°C (-5 to -2°C))  
+Cloud: Cloud base ~400 m (~300–500 m), extensive hill fog and haze, may lower into valleys east  
+Freezing level: ~1500 m (~800–2000 m), lowering through day, near 800 m by evening
+
+Snowdonia  
+Rain: <5% (<5%–10%) chance patchy light drizzle, mostly east, drier west  
+Wind: 21 mph (15–25 mph) on tops, occasionally gusty, stronger late/overnight  
+Temp: Valleys 7°C (7–9°C); summits 3°C (3–5°C) (feels like 0°C (–1–1°C))  
+Cloud: Cloud base ~600 m (~400–600 m), extensive at first, lifting and breaking west, low cloud persistent east  
+Freezing level: ~1800 m (~1300–2000 m), lowering overnight, freezing on some high tops late
+
+Brecon Beacons  
+Rain: <5% (0–10%) chance patchy light drizzle, hills often dry  
+Wind: 25 mph (20–40 mph) on tops, gusty and blustery, strongest early/late and on exposed ridges  
+Temp: Valleys 6°C (2–7°C); summits 2°C (0–6°C) (feels like -4°C (-6–1°C))  
+Cloud: Cloud base ~600 m (~400–600 m), extensive at first, breaking/lifting in afternoon, most summits clearing later  
+Freezing level: ~600 m (~400–2100 m), falling through day, lowest east and by evening
+
+Lake District  
+Rain: <5% (<5%–<5%) chance Dry all day; negligible risk.  
+Wind: 15 mph (15–21 mph) on tops, moderate easterly, locally gusty.  
+Temp: Valleys 6°C (6–8°C); summits 0°C (0–3°C) (feels like -2°C (-4–-2°C))  
+Cloud: Cloud base ~700 m (~700–700 m), patchy early, clearing to mostly cloud-free summits.  
+Freezing level: ~800 m (~800–2000 m), lowering through day, below higher tops by evening.</pre>
+    </div>
+  </div>
 </body>
 </html>
