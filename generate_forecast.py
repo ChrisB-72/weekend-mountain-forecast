@@ -1,3 +1,4 @@
+# generate_forecast.py
 import os
 import re
 from datetime import date, timedelta, datetime, timezone
@@ -9,11 +10,8 @@ from openai import OpenAI
 MODEL = os.getenv("OPENAI_MODEL", "gpt-4.1")
 TIMEOUT_SECS = 20
 
-# Priority for choosing "direction wording" and the best extractable values:
-# MWIS + Met Office first. Windy/Mountain-Forecast best-effort only.
 SOURCE_PRIORITY = ["mwis", "metoffice", "windy", "mountainforecast"]
 
-# Keep inputs small to avoid token/rate issues
 MAX_CHARS = {
     "mwis": 9000,
     "metoffice": 9000,
@@ -21,27 +19,27 @@ MAX_CHARS = {
     "mountainforecast": 2000,
 }
 
-# Best-effort URLs (Windy & Mountain-Forecast are generic; often not scrape-friendly).
+# Areas + URLs (best-effort)
 URLS = {
-    "Peaks": {
+    "The Peak District": {
         "mwis": "https://www.mwis.org.uk/forecasts/english-and-welsh/peak-district",
         "metoffice": "https://weather.metoffice.gov.uk/specialist-forecasts/mountain/peak-district",
         "windy": "https://www.windy.com/",
         "mountainforecast": "https://www.mountain-forecast.com/",
     },
-    "Snowdon": {
+    "Eryri": {
         "mwis": "https://www.mwis.org.uk/forecasts/english-and-welsh/snowdonia-national-park",
         "metoffice": "https://weather.metoffice.gov.uk/specialist-forecasts/mountain/snowdonia",
         "windy": "https://www.windy.com/",
         "mountainforecast": "https://www.mountain-forecast.com/",
     },
-    "Brecon": {
+    "Bannau Brycheiniog": {
         "mwis": "https://www.mwis.org.uk/forecasts/english-and-welsh/brecon-beacons",
         "metoffice": "https://weather.metoffice.gov.uk/specialist-forecasts/mountain/brecon-beacons",
         "windy": "https://www.windy.com/",
         "mountainforecast": "https://www.mountain-forecast.com/",
     },
-    "Lakes": {
+    "The Lake District": {
         "mwis": "https://www.mwis.org.uk/forecasts/english-and-welsh/lake-district",
         "metoffice": "https://weather.metoffice.gov.uk/specialist-forecasts/mountain/lake-district",
         "windy": "https://www.windy.com/",
@@ -49,7 +47,7 @@ URLS = {
     },
 }
 
-REGIONS = ["Peaks", "Snowdon", "Brecon", "Lakes"]
+AREAS = list(URLS.keys())
 
 
 def strip_html(html: str) -> str:
@@ -72,13 +70,11 @@ def fetch_text(url: str) -> Tuple[bool, str]:
 
 
 def next_three_days() -> List[date]:
-    # "next three days" = today + next 2 days (UTC runner time)
     today = date.today()
     return [today, today + timedelta(days=1), today + timedelta(days=2)]
 
 
 def day_title(d: date) -> str:
-    # e.g. "Wednesday 27 December"
     def ordinal(n: int) -> str:
         if 10 <= n % 100 <= 20:
             suffix = "th"
@@ -88,9 +84,9 @@ def day_title(d: date) -> str:
     return f"{d.strftime('%A')} {ordinal(d.day)} {d.strftime('%B')}"
 
 
-def build_region_sources_blob(region: str) -> str:
-    parts: List[str] = [f"=== REGION: {region} ==="]
-    srcs = URLS[region]
+def build_area_sources_blob(area: str) -> str:
+    parts: List[str] = [f"=== AREA: {area} ==="]
+    srcs = URLS[area]
     for src in SOURCE_PRIORITY:
         url = srcs.get(src)
         if not url:
@@ -102,57 +98,44 @@ def build_region_sources_blob(region: str) -> str:
     return "\n".join(parts)
 
 
-def ask_region_for_day(
-    client: OpenAI,
-    region: str,
-    target_day: date,
-    target_day_title: str,
-    sources_blob: str,
-) -> Optional[str]:
-    # One region + one day per request: keeps token usage low and avoids TPM errors.
-    prompt = f"""
-You are producing ONE region block for ONE day.
+def lines_to_cell_html(lines: List[str]) -> str:
+    # Wrap each line in a no-wrap div; truncate with ellipsis if needed (CSS).
+    safe = []
+    for ln in lines:
+        ln = ln.strip()
+        if not ln:
+            continue
+        # minimal HTML escaping
+        ln = (ln.replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;"))
+        safe.append(f'<span class="line">{ln}</span>')
+    return '<div class="lines">' + "".join(safe) + "</div>"
 
-DAY: {target_day_title} (date: {target_day.isoformat()})
+
+def ask_area_for_day(client: OpenAI, area: str, target_day_label: str, sources_blob: str) -> Optional[List[str]]:
+    """
+    Returns exactly 7 lines (labels only, no area title):
+    Rain:
+    Valley wind:
+    Hill wind:
+    Valley temp:
+    Hill temp:
+    Cloud base:
+    Freezing level:
+    """
+    prompt = f"""
+You are producing ONE forecast cell for ONE area and ONE day.
+
+AREA: {area}
+DAY: {target_day_label}
 
 SOURCES (best-effort extracted text; may be incomplete):
 {sources_blob}
 
-You MUST follow these formatting rules:
+OUTPUT:
+Return EXACTLY 7 lines, in this exact order (no extra lines):
 
-1) If a min/max are the same, show only the single value (no range).
-   Example: "Rain: 20%"
-
-2) If min/max differ, show ONLY the range, and do NOT include any average/current value.
-   Example: "Rain: 10 to 30%"
-
-3) Use "to" for ranges (never hyphens).
-
-4) Include wind direction on both wind lines.
-   Example: "Valley wind: W to SW 10 to 20 mph"
-   If only one direction is available: "Valley wind: W 10 mph"
-
-5) Region title must be bold (HTML bold tags).
-   Example: "<b>Peaks</b>"
-
-6) You may append very brief helpful text ONLY if it adds operational value.
-   - keep under ~6 words
-   - lowercase
-   - no full stops
-   Examples: "morning then dry", "gusty", "hill fog", "improving", "poor vis on tops"
-
-7) If a value cannot be extracted, use "n/a" (no range).
-   Example: "Freezing level: n/a"
-
-IMPORTANT:
-- Best-effort parsing: use numbers only if clearly present in sources.
-- Prioritise MWIS and Met Office when choosing wording/interpretation.
-- Windy and Mountain-Forecast are optional; include only if clearly extractable.
-- Do not add extra headings or summaries.
-
-Return EXACTLY this 7-line block (no extra blank lines at start or end):
-
-<b>{region}</b>
 Rain: ...
 Valley wind: ...
 Hill wind: ...
@@ -160,6 +143,21 @@ Valley temp: ...
 Hill temp: ...
 Cloud base: ...
 Freezing level: ...
+
+RULES:
+- Use values you can clearly extract from sources; otherwise use "n/a".
+- Min/max formatting:
+  * If min = max, show only the single value (no range).
+  * If min ≠ max, show ONLY the range and do NOT include any average/current value.
+  * Always use "to" for ranges (never hyphens).
+- Include wind direction on both wind lines (e.g. "W to SW 10 to 20 mph" or "W 15 mph").
+- You may append very brief helpful text ONLY if it adds value:
+  * must fit on ONE LINE (no commas/semicolons)
+  * keep under ~25 characters
+  * lowercase
+  * no full stops
+  Examples: "morning then dry", "gusty", "hill fog", "improving", "poor vis on tops"
+- Prioritise MWIS and Met Office for interpretation; Windy/Mountain-Forecast only if clearly extractable.
 """.strip()
 
     try:
@@ -168,23 +166,18 @@ Freezing level: ...
             messages=[{"role": "user", "content": prompt}],
         )
         txt = (resp.choices[0].message.content or "").strip()
-        return txt if txt else None
+        if not txt:
+            return None
+        lines = [l.rstrip() for l in txt.splitlines() if l.strip() != ""]
+        if len(lines) != 7:
+            # best-effort correction: truncate or pad with n/a
+            lines = lines[:7]
+            while len(lines) < 7:
+                lines.append("n/a")
+        return lines
     except Exception as e:
-        print(f"Generation failed for {region} {target_day_title}: {e}")
+        print(f"Generation failed for {area} {target_day_label}: {e}")
         return None
-
-
-def compute_confidence(have_counts: List[int], total_expected: int) -> str:
-    """
-    Very simple heuristic:
-    - High: most regions produced blocks and few 'n/a'
-    - Moderate: default
-    - Low: many missing values
-    """
-    # have_counts is number of blocks produced per day (should be len(REGIONS))
-    if all(c == total_expected for c in have_counts):
-        return "Moderate"  # keep conservative; you can tune to "High" if you like
-    return "Low"
 
 
 def main() -> int:
@@ -197,51 +190,77 @@ def main() -> int:
     client = OpenAI(api_key=api_key)
 
     days = next_three_days()
-    titles = [day_title(d) for d in days]
+    day_titles = [day_title(d) for d in days]
     updated_utc = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
 
-    # Pre-fetch per region once (then reuse for 3 days)
-    region_sources: Dict[str, str] = {}
-    for region in REGIONS:
-        print(f"Fetching sources for region: {region}")
-        region_sources[region] = build_region_sources_blob(region)
+    # Prefetch per area once
+    area_sources: Dict[str, str] = {}
+    for area in AREAS:
+        print(f"Fetching sources for: {area}")
+        area_sources[area] = build_area_sources_blob(area)
 
-    day_blocks: List[str] = []
-    produced_counts: List[int] = []
+    # Build cells: 3 days + outlook
+    cells: Dict[Tuple[str, str], str] = {}  # (area, slot) -> HTML
+    # slots: day1, day2, day3, outlook
+    for area in AREAS:
+        src_blob = area_sources[area]
 
-    for d, t in zip(days, titles):
-        blocks: List[str] = []
-        for region in REGIONS:
-            blk = ask_region_for_day(client, region, d, t, region_sources[region])
-            if not blk:
-                print(f"Missing output for {region} on {t}; leaving existing index.html unchanged.")
+        # Day 1..3
+        for idx, label in enumerate(day_titles, start=1):
+            lines = ask_area_for_day(client, area, label, src_blob)
+            if not lines:
+                print("Missing output; leaving existing index.html unchanged.")
                 return 0
-            blocks.append(blk)
-        produced_counts.append(len(blocks))
-        day_blocks.append("\n\n".join(blocks).strip())
+            cells[(area, f"day{idx}")] = lines_to_cell_html(lines)
 
-    confidence = compute_confidence(produced_counts, len(REGIONS))
+        # Outlook (broad trend) – still 7 lines, best-effort; may be n/a-heavy.
+        outlook_lines = ask_area_for_day(client, area, "Outlook (days 4 to 7)", src_blob)
+        if not outlook_lines:
+            print("Missing outlook output; leaving existing index.html unchanged.")
+            return 0
+        cells[(area, "outlook")] = lines_to_cell_html(outlook_lines)
 
-    # Header (exact placement for Confidence + Last updated)
+    # Header
     header = "\n".join([
         "Mountain Forecast",
-        f"Next 3 days ({titles[0]} to {titles[-1]})",
-        f"Confidence: {confidence}",
+        f"Next 3 days ({day_titles[0]} to {day_titles[-1]})",
+        "Confidence: Moderate",
         f"Last updated: {updated_utc}",
     ])
 
-    # Build HTML from template placeholders
     with open("page_template.html", "r", encoding="utf-8") as f:
         template = f.read()
 
+    # Map areas to placeholders
+    def get(area: str, slot: str) -> str:
+        return cells[(area, slot)]
+
     html = (template
             .replace("{{HEADER}}", header)
-            .replace("{{DAY1_TITLE}}", titles[0])
-            .replace("{{DAY2_TITLE}}", titles[1])
-            .replace("{{DAY3_TITLE}}", titles[2])
-            .replace("{{DAY1_BODY}}", day_blocks[0])
-            .replace("{{DAY2_BODY}}", day_blocks[1])
-            .replace("{{DAY3_BODY}}", day_blocks[2]))
+            .replace("{{DAY1_TITLE}}", day_titles[0])
+            .replace("{{DAY2_TITLE}}", day_titles[1])
+            .replace("{{DAY3_TITLE}}", day_titles[2])
+
+            .replace("{{PEAKS_DAY1}}", get("The Peak District", "day1"))
+            .replace("{{PEAKS_DAY2}}", get("The Peak District", "day2"))
+            .replace("{{PEAKS_DAY3}}", get("The Peak District", "day3"))
+            .replace("{{PEAKS_OUTLOOK}}", get("The Peak District", "outlook"))
+
+            .replace("{{ERYRI_DAY1}}", get("Eryri", "day1"))
+            .replace("{{ERYRI_DAY2}}", get("Eryri", "day2"))
+            .replace("{{ERYRI_DAY3}}", get("Eryri", "day3"))
+            .replace("{{ERYRI_OUTLOOK}}", get("Eryri", "outlook"))
+
+            .replace("{{BANNAU_DAY1}}", get("Bannau Brycheiniog", "day1"))
+            .replace("{{BANNAU_DAY2}}", get("Bannau Brycheiniog", "day2"))
+            .replace("{{BANNAU_DAY3}}", get("Bannau Brycheiniog", "day3"))
+            .replace("{{BANNAU_OUTLOOK}}", get("Bannau Brycheiniog", "outlook"))
+
+            .replace("{{LAKES_DAY1}}", get("The Lake District", "day1"))
+            .replace("{{LAKES_DAY2}}", get("The Lake District", "day2"))
+            .replace("{{LAKES_DAY3}}", get("The Lake District", "day3"))
+            .replace("{{LAKES_OUTLOOK}}", get("The Lake District", "outlook"))
+            )
 
     with open("index.html", "w", encoding="utf-8") as f:
         f.write(html)
