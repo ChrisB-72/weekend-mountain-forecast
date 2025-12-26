@@ -1,8 +1,9 @@
+<!-- page_template.html -->
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Mountain Forecast (Next 3 Days)</title>
+  <title>Mountain Forecast (Next 3 Days + Outlook)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
@@ -13,41 +14,93 @@
     :root { --border:#ddd; --shadow: rgba(0,0,0,0.06); }
     body{
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      max-width: 1200px;
+      max-width: 1400px;
       margin: 2rem auto;
       padding: 0 1rem;
-      line-height: 1.45;
+      line-height: 1.35;
       color:#111;
     }
+
     .header{
       white-space: pre-wrap;
       margin-bottom: 1rem;
     }
-    .days{
-      display:grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1rem;
-      align-items: start;
+
+    /* Grid: 1st col = area titles, then 4 forecast columns */
+    .grid{
+      display: grid;
+      grid-template-columns: 180px repeat(4, 1fr);
+      gap: 12px;
+      align-items: stretch;
     }
-    .day{
-      border:1px solid var(--border);
+
+    .colhead{
+      border: 1px solid var(--border);
       border-radius: 12px;
-      padding: 1rem;
+      padding: .75rem .9rem;
       box-shadow: 0 1px 2px var(--shadow);
-      background:#fff;
+      background: #fff;
+      font-weight: 700;
     }
-    .day h2{
-      margin: 0 0 .75rem 0;
-      font-size: 1.1rem;
+    .corner{
+      background: transparent;
+      border: none;
+      box-shadow: none;
     }
-    pre{
-      margin:0;
-      white-space: pre-wrap;
-      font-family: inherit;
+
+    .area{
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem .6rem;
+      box-shadow: 0 1px 2px var(--shadow);
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
-    @media (max-width: 980px){
-      .days{ grid-template-columns: 1fr; }
+    .area .stack{
+      font-weight: 800;
+      letter-spacing: .04em;
+      text-transform: none;
+      text-align: center;
+      font-size: 1.15rem;
+      line-height: 1.05;
     }
+    .area .stack span{
+      display:block;           /* one word per line */
+    }
+
+    .cell{
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: .85rem .9rem;
+      box-shadow: 0 1px 2px var(--shadow);
+      background: #fff;
+    }
+
+    .lines{ margin: 0; }
+    .line{
+      display:block;
+      white-space: nowrap;        /* keep “brief text” on one line */
+      overflow: hidden;
+      text-overflow: ellipsis;    /* if it *must* wrap, truncate instead */
+    }
+
+    /* Mobile: stack columns; keep row grouping */
+    @media (max-width: 1100px){
+      .grid{
+        grid-template-columns: 140px repeat(2, 1fr);
+      }
+      /* On small screens, you may prefer 2 cols; adjust if needed. */
+    }
+    @media (max-width: 700px){
+      .grid{
+        grid-template-columns: 1fr;
+      }
+      .corner{ display:none; }
+      .colhead{ position: sticky; top: 0; z-index: 1; }
+    }
+
   </style>
 
   <script>
@@ -65,19 +118,48 @@
 
   <div class="header">{{HEADER}}</div>
 
-  <div class="days">
-    <div class="day">
-      <h2>{{DAY1_TITLE}}</h2>
-      <pre>{{DAY1_BODY}}</pre>
-    </div>
-    <div class="day">
-      <h2>{{DAY2_TITLE}}</h2>
-      <pre>{{DAY2_BODY}}</pre>
-    </div>
-    <div class="day">
-      <h2>{{DAY3_TITLE}}</h2>
-      <pre>{{DAY3_BODY}}</pre>
-    </div>
+  <div class="grid">
+    <div class="colhead corner"></div>
+    <div class="colhead">{{DAY1_TITLE}}</div>
+    <div class="colhead">{{DAY2_TITLE}}</div>
+    <div class="colhead">{{DAY3_TITLE}}</div>
+    <div class="colhead">Outlook</div>
+
+    <!-- Row: Peak District -->
+    <div class="area"><div class="stack">
+      <span>The</span><span>Peak</span><span>District</span>
+    </div></div>
+    <div class="cell">{{PEAKS_DAY1}}</div>
+    <div class="cell">{{PEAKS_DAY2}}</div>
+    <div class="cell">{{PEAKS_DAY3}}</div>
+    <div class="cell">{{PEAKS_OUTLOOK}}</div>
+
+    <!-- Row: Eryri -->
+    <div class="area"><div class="stack">
+      <span>Eryri</span>
+    </div></div>
+    <div class="cell">{{ERYRI_DAY1}}</div>
+    <div class="cell">{{ERYRI_DAY2}}</div>
+    <div class="cell">{{ERYRI_DAY3}}</div>
+    <div class="cell">{{ERYRI_OUTLOOK}}</div>
+
+    <!-- Row: Bannau Brycheiniog -->
+    <div class="area"><div class="stack">
+      <span>Bannau</span><span>Brycheiniog</span>
+    </div></div>
+    <div class="cell">{{BANNAU_DAY1}}</div>
+    <div class="cell">{{BANNAU_DAY2}}</div>
+    <div class="cell">{{BANNAU_DAY3}}</div>
+    <div class="cell">{{BANNAU_OUTLOOK}}</div>
+
+    <!-- Row: Lake District -->
+    <div class="area"><div class="stack">
+      <span>The</span><span>Lake</span><span>District</span>
+    </div></div>
+    <div class="cell">{{LAKES_DAY1}}</div>
+    <div class="cell">{{LAKES_DAY2}}</div>
+    <div class="cell">{{LAKES_DAY3}}</div>
+    <div class="cell">{{LAKES_OUTLOOK}}</div>
   </div>
 
 </body>
