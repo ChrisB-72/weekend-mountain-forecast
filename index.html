@@ -1,8 +1,9 @@
+<!-- page_template.html -->
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Mountain Forecast (Next 3 Days)</title>
+  <title>Mountain Forecast (Next 3 Days + Outlook)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
@@ -13,41 +14,93 @@
     :root { --border:#ddd; --shadow: rgba(0,0,0,0.06); }
     body{
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      max-width: 1200px;
+      max-width: 1400px;
       margin: 2rem auto;
       padding: 0 1rem;
-      line-height: 1.45;
+      line-height: 1.35;
       color:#111;
     }
+
     .header{
       white-space: pre-wrap;
       margin-bottom: 1rem;
     }
-    .days{
-      display:grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1rem;
-      align-items: start;
+
+    /* Grid: 1st col = area titles, then 4 forecast columns */
+    .grid{
+      display: grid;
+      grid-template-columns: 180px repeat(4, 1fr);
+      gap: 12px;
+      align-items: stretch;
     }
-    .day{
-      border:1px solid var(--border);
+
+    .colhead{
+      border: 1px solid var(--border);
       border-radius: 12px;
-      padding: 1rem;
+      padding: .75rem .9rem;
       box-shadow: 0 1px 2px var(--shadow);
-      background:#fff;
+      background: #fff;
+      font-weight: 700;
     }
-    .day h2{
-      margin: 0 0 .75rem 0;
-      font-size: 1.1rem;
+    .corner{
+      background: transparent;
+      border: none;
+      box-shadow: none;
     }
-    pre{
-      margin:0;
-      white-space: pre-wrap;
-      font-family: inherit;
+
+    .area{
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem .6rem;
+      box-shadow: 0 1px 2px var(--shadow);
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
-    @media (max-width: 980px){
-      .days{ grid-template-columns: 1fr; }
+    .area .stack{
+      font-weight: 800;
+      letter-spacing: .04em;
+      text-transform: none;
+      text-align: center;
+      font-size: 1.15rem;
+      line-height: 1.05;
     }
+    .area .stack span{
+      display:block;           /* one word per line */
+    }
+
+    .cell{
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: .85rem .9rem;
+      box-shadow: 0 1px 2px var(--shadow);
+      background: #fff;
+    }
+
+    .lines{ margin: 0; }
+    .line{
+      display:block;
+      white-space: nowrap;        /* keep “brief text” on one line */
+      overflow: hidden;
+      text-overflow: ellipsis;    /* if it *must* wrap, truncate instead */
+    }
+
+    /* Mobile: stack columns; keep row grouping */
+    @media (max-width: 1100px){
+      .grid{
+        grid-template-columns: 140px repeat(2, 1fr);
+      }
+      /* On small screens, you may prefer 2 cols; adjust if needed. */
+    }
+    @media (max-width: 700px){
+      .grid{
+        grid-template-columns: 1fr;
+      }
+      .corner{ display:none; }
+      .colhead{ position: sticky; top: 0; z-index: 1; }
+    }
+
   </style>
 
   <script>
@@ -66,123 +119,50 @@
   <div class="header">Mountain Forecast
 Next 3 days (Friday 26th December to Sunday 28th December)
 Confidence: Moderate
-Last updated: 2025-12-26 14:14 UTC</div>
+Last updated: 2025-12-26 14:32 UTC</div>
 
-  <div class="days">
-    <div class="day">
-      <h2>Friday 26th December</h2>
-      <pre><b>Peaks</b>
-Rain: 0%
-Valley wind: E 11 to 20 mph
-Hill wind: E 25 to 40 mph, gusts to 45 mph
-Valley temp: 0 to 5°C
-Hill temp: 0 to 1°C
-Cloud base: 400 to 600 m, mainly above tops
-Freezing level: 400 to 600 m
+  <div class="grid">
+    <div class="colhead corner"></div>
+    <div class="colhead">Friday 26th December</div>
+    <div class="colhead">Saturday 27th December</div>
+    <div class="colhead">Sunday 28th December</div>
+    <div class="colhead">Outlook</div>
 
-<b>Snowdon</b>
-Rain: 0%
-Valley wind: E 15 to 22 mph
-Hill wind: E 30 to 47 mph, gusts 50 to 60 mph
-Valley temp: 3 to 5°C
-Hill temp: -2 to -1°C, feels like -13 to -10°C
-Cloud base: 400 to 700m, best clear in north
-Freezing level: 300 to 500m
+    <!-- Row: Peak District -->
+    <div class="area"><div class="stack">
+      <span>The</span><span>Peak</span><span>District</span>
+    </div></div>
+    <div class="cell"><div class="lines"><span class="line">Rain: Dry</span><span class="line">Valley wind: E 11 to 20 mph gusty</span><span class="line">Hill wind: E 25 to 40 mph gusty</span><span class="line">Valley temp: 0 to 5°C</span><span class="line">Hill temp: 0 to 1°C feeling -10°C in wind</span><span class="line">Cloud base: 400 to 600m, lifting above tops</span><span class="line">Freezing level: 400 to 600m rising</span></div></div>
+    <div class="cell"><div class="lines"><span class="line">Rain: dry, slight risk light drizzle east</span><span class="line">Valley wind: E 11 to 20 mph, gusty</span><span class="line">Hill wind: E 25 to 35 mph, gusts 35 to 45 mph, gusty</span><span class="line">Valley temp: 4 to 7°C</span><span class="line">Hill temp: 2 to 3°C, feels like -8°C</span><span class="line">Cloud base: 400 to 600m, mainly above tops</span><span class="line">Freezing level: above summits, 600m later</span></div></div>
+    <div class="cell"><div class="lines"><span class="line">Rain: Dry</span><span class="line">Valley wind: E 11 to 20 mph gusty</span><span class="line">Hill wind: E 15 to 25 mph gusty</span><span class="line">Valley temp: 3 to 6°C</span><span class="line">Hill temp: 2°C feeling like -5°C</span><span class="line">Cloud base: Mostly above hills, rare patches on tops</span><span class="line">Freezing level: 600m lowering</span></div></div>
+    <div class="cell"><div class="lines"><span class="line">Rain: dry or a little drizzle possible</span><span class="line">Valley wind: E 11 to 20 mph gusty</span><span class="line">Hill wind: E 20 to 40 mph gusty, strong chill</span><span class="line">Valley temp: 0 to 7°C</span><span class="line">Hill temp: 0 to 3°C, feels like -7 to -10°C</span><span class="line">Cloud base: 400 to 600m, may lower by afternoon</span><span class="line">Freezing level: 400 to 600m</span></div></div>
 
-<b>Brecon</b>
-Rain: 0%
-Valley wind: NE to E 10 to 12 mph
-Hill wind: E to NE 18 to 40 mph, gusts 45 mph, gusty
-Valley temp: -1 rising to 5°C
-Hill temp: -2 to 3°C, feels like -15°C in wind
-Cloud base: 400 to 700m, higher tops clearer west
-Freezing level: 100 to 600m, some western slopes above
+    <!-- Row: Eryri -->
+    <div class="area"><div class="stack">
+      <span>Eryri</span>
+    </div></div>
+    <div class="cell"><div class="lines"><span class="line">Rain: Dry</span><span class="line">Valley wind: E 15 to 22 mph</span><span class="line">Hill wind: E 30 to 47 mph gusty</span><span class="line">Valley temp: 3 to 4°C</span><span class="line">Hill temp: -2 to -1°C feels much colder</span><span class="line">Cloud base: 500 to 700m, patchy in south</span><span class="line">Freezing level: 300 to 500m rising during day</span></div></div>
+    <div class="cell"><div class="lines"><span class="line">Rain: Dry, rare brief spot east</span><span class="line">Valley wind: E 15 to 22 mph gusty</span><span class="line">Hill wind: E 30 to 40 mph, gusts 50 to 60 mph</span><span class="line">Valley temp: 3 to 5°C</span><span class="line">Hill temp: -2 to 3°C feels like -10°C</span><span class="line">Cloud base: 400 to 700m, clearing west</span><span class="line">Freezing level: 300 to 500m, patchy frost shelters</span></div></div>
+    <div class="cell"><div class="lines"><span class="line">Rain: Dry</span><span class="line">Valley wind: E 15 to 22 mph gusty</span><span class="line">Hill wind: E 15 to 41 mph gusty</span><span class="line">Valley temp: 3 to 5°C</span><span class="line">Hill temp: -2 to -1°C feels like -13 to -8°C</span><span class="line">Cloud base: 500 to 700m hill fog in south</span><span class="line">Freezing level: 400 to 700m lowering, some valleys frosty</span></div></div>
+    <div class="cell"><div class="lines"><span class="line">Rain: dry</span><span class="line">Valley wind: E 15 to 22 mph gusty</span><span class="line">Hill wind: E 30 to 40 mph gusty</span><span class="line">Valley temp: -2 to 5°C</span><span class="line">Hill temp: -2 to 3°C wind chill -10°C or lower</span><span class="line">Cloud base: 400 to 700m, highest tops above cloud at times</span><span class="line">Freezing level: 400 to 600m lowering, patchy frost mornings</span></div></div>
 
-<b>Lakes</b>
-Rain: 0%
-Valley wind: NE 2 to 8 mph
-Hill wind: E 25 to 40 mph, gusty
-Valley temp: -1 to 6°C
-Hill temp: 0 to 3°C
-Cloud base: 500 to 700 m east, often clear west
-Freezing level: 400 to 600 m, rising above summits in sun</pre>
-    </div>
-    <div class="day">
-      <h2>Saturday 27th December</h2>
-      <pre><b>Peaks</b>
-Rain: 0 to 10% brief east moors
-Valley wind: E 11 to 20 mph gusty
-Hill wind: E 25 to 35 mph gusts 35 to 45 mph
-Valley temp: 0 to 7C
-Hill temp: 0 to 3C, feels like -8C
-Cloud base: 400 to 600m, mostly above tops, more cloud later
-Freezing level: 400 to 600m rising above tops
+    <!-- Row: Bannau Brycheiniog -->
+    <div class="area"><div class="stack">
+      <span>Bannau</span><span>Brycheiniog</span>
+    </div></div>
+    <div class="cell"><div class="lines"><span class="line">Rain: 0% dry</span><span class="line">Valley wind: NE to E 10 to 12 mph</span><span class="line">Hill wind: E to NE 18 to 40 mph gusty</span><span class="line">Valley temp: 0 to 5°C</span><span class="line">Hill temp: -2 to 3°C feeling -10 to -15°C in wind</span><span class="line">Cloud base: 400 to 700m, higher tops above cloud</span><span class="line">Freezing level: 100 to 600m, mostly sub-zero above 600m</span></div></div>
+    <div class="cell"><div class="lines"><span class="line">Rain: dry or rare brief spot, mainly east</span><span class="line">Valley wind: NE to E 10 to 13 mph</span><span class="line">Hill wind: E 30 to 45 mph, gusty</span><span class="line">Valley temp: -1 to 5°C</span><span class="line">Hill temp: -2 to 3°C, wind chill -7 to -10°C</span><span class="line">Cloud base: 400 to 700m, highest tops above</span><span class="line">Freezing level: 400 to 700m early, above tops later</span></div></div>
+    <div class="cell"><div class="lines"><span class="line">Rain: 0% dry all day</span><span class="line">Valley wind: NE to E 10 to 13 mph</span><span class="line">Hill wind: E 15 to 25 mph gusty</span><span class="line">Valley temp: -1 to 5°C</span><span class="line">Hill temp: 0°C feels like -7°C</span><span class="line">Cloud base: 400 to 700m some tops clear</span><span class="line">Freezing level: 600 to 700m frost in valleys</span></div></div>
+    <div class="cell"><div class="lines"><span class="line">Rain: 0% (dry)</span><span class="line">Valley wind: NE to E 10 to 13 mph</span><span class="line">Hill wind: E to NE 18 to 30 mph, gusty</span><span class="line">Valley temp: -1 to 5°C</span><span class="line">Hill temp: -2 to 3°C</span><span class="line">Cloud base: 400 to 700m, highest tops may be above cloud</span><span class="line">Freezing level: 400 to 600m, lowering</span></div></div>
 
-<b>Snowdon</b>
-Rain: 0 to 20%
-Valley wind: E 15 to 22 mph
-Hill wind: E 30 to 47 mph, gusts 40 to 57 mph, gusty
-Valley temp: 3 to 5°C
-Hill temp: -2 to 3°C, wind chill to -13°C
-Cloud base: 400 to 700m, tops clearer in west
-Freezing level: 300 to 500m
-
-<b>Brecon</b>
-Rain: 0% to 10%
-Valley wind: NE to E 10 to 13 mph
-Hill wind: E 30 to 45 mph gusty
-Valley temp: -1 to 5 °C
-Hill temp: -2 to 3 °C
-Cloud base: 400 to 700 m, lower east; patchy
-Freezing level: 400 to 600 m, locally above tops
-
-<b>Lakes</b>
-Rain: 0% (very isolated drizzle possible)
-Valley wind: NE to E 2 to 8 mph
-Hill wind: E 25 to 40 mph gusty
-Valley temp: -1 rising to 6°C
-Hill temp: 1 to 3°C
-Cloud base: 500 to 700m east, mostly clear west
-Freezing level: 400 to 700m morning, above summits later</pre>
-    </div>
-    <div class="day">
-      <h2>Sunday 28th December</h2>
-      <pre><b>Peaks</b>
-Rain: 0%
-Valley wind: E 11 to 20 mph
-Hill wind: E 15 to 25 mph, gusts 25 mph
-Valley temp: 3 to 6°C
-Hill temp: 2°C
-Cloud base: 400 to 600 m, mostly above tops
-Freezing level: 400 to 600 m
-
-<b>Snowdon</b>
-Rain: 0%
-Valley wind: E 15 to 22 mph
-Hill wind: E 15 to 40 mph, gusts 50 to 60 mph
-Valley temp: 3 to 5°C
-Hill temp: -2 to -1°C
-Cloud base: 400 to 700m, highest tops above cloud at times
-Freezing level: 400 to 600m
-
-<b>Brecon</b>
-Rain: 0%
-Valley wind: E to NE 10 to 12 mph
-Hill wind: E to NE 15 to 25 mph, gusty
-Valley temp: -1 rising to 5°C
-Hill temp: 0°C
-Cloud base: 400 to 700 m, some tops above cloud
-Freezing level: 600 to 700 m
-
-<b>Lakes</b>
-Rain: 0%
-Valley wind: NE 2 to 8 mph
-Hill wind: E 10 to 30 mph
-Valley temp: -1 to 6°C
-Hill temp: 0 to 3°C
-Cloud base: 700m east, clear west
-Freezing level: 400 to 700m, frost in valleys</pre>
-    </div>
+    <!-- Row: Lake District -->
+    <div class="area"><div class="stack">
+      <span>The</span><span>Lake</span><span>District</span>
+    </div></div>
+    <div class="cell"><div class="lines"><span class="line">Rain: Dry</span><span class="line">Valley wind: NE 2 to 8 mph</span><span class="line">Hill wind: E 20 to 40 mph gusty</span><span class="line">Valley temp: -1 to 6°C</span><span class="line">Hill temp: 0 to 3°C feeling much colder</span><span class="line">Cloud base: 500 to 700m east, higher west</span><span class="line">Freezing level: 400 to 600m</span></div></div>
+    <div class="cell"><div class="lines"><span class="line">Rain: Dry, odd brief spot possible north/east</span><span class="line">Valley wind: NE 2 to 8 mph</span><span class="line">Hill wind: E 25 to 35 mph, gusts 40 mph, gusty</span><span class="line">Valley temp: -1 to 6°C</span><span class="line">Hill temp: 1 to 3°C</span><span class="line">Cloud base: 700m or above, clearer west</span><span class="line">Freezing level: 400 to 600m, some terrain frozen</span></div></div>
+    <div class="cell"><div class="lines"><span class="line">Rain: Dry all day</span><span class="line">Valley wind: NE 2 to 8 mph</span><span class="line">Hill wind: E 10 to 20 mph gusty</span><span class="line">Valley temp: 3 to 6°C</span><span class="line">Hill temp: 0 to 2°C</span><span class="line">Cloud base: 700m or above, patchy east</span><span class="line">Freezing level: 600 to 700m, frost in valleys</span></div></div>
+    <div class="cell"><div class="lines"><span class="line">Rain: 0% dry</span><span class="line">Valley wind: NE to E 2 to 8 mph</span><span class="line">Hill wind: E 25 to 40 mph gusty</span><span class="line">Valley temp: -1 to 6°C</span><span class="line">Hill temp: 0 to 3°C feeling much colder</span><span class="line">Cloud base: 500 to 700m, best in west</span><span class="line">Freezing level: 400 to 700m, rising daytime</span></div></div>
   </div>
 
 </body>
