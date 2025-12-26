@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Weekend Mountain Forecast</title>
+  <title>Mountain Forecast (Next 3 Days)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
@@ -10,44 +10,48 @@
   <meta http-equiv="Expires" content="0" />
 
   <style>
-    body {
+    :root { --border:#ddd; --shadow: rgba(0,0,0,0.06); }
+    body{
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      max-width: 1100px;
+      max-width: 1200px;
       margin: 2rem auto;
       padding: 0 1rem;
       line-height: 1.45;
+      color:#111;
     }
-    .header {
+    .header{
       white-space: pre-wrap;
       margin-bottom: 1rem;
     }
-    .grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
+    .days{
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
       gap: 1rem;
+      align-items: start;
     }
-    .col {
-      border: 1px solid #ddd;
-      border-radius: 10px;
+    .day{
+      border:1px solid var(--border);
+      border-radius: 12px;
       padding: 1rem;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
-      background: #fff;
+      box-shadow: 0 1px 2px var(--shadow);
+      background:#fff;
     }
-    .col h2 {
+    .day h2{
       margin: 0 0 .75rem 0;
       font-size: 1.1rem;
     }
-    pre {
-      margin: 0;
+    pre{
+      margin:0;
       white-space: pre-wrap;
       font-family: inherit;
     }
-    @media (max-width: 900px) {
-      .grid { grid-template-columns: 1fr; }
+    @media (max-width: 980px){
+      .days{ grid-template-columns: 1fr; }
     }
   </style>
 
   <script>
+    // Cache-buster for aggressive mobile caches
     (function () {
       const url = new URL(window.location.href);
       if (!url.searchParams.has("t")) {
@@ -58,72 +62,128 @@
   </script>
 </head>
 <body>
-  <div class="header">Weekend Mountain Forecast
-27th / 28th December
+
+  <div class="header">Mountain Forecast
+Next 3 days (Friday 26th December to Sunday 28th December)
 Confidence: Moderate
-Last updated: 2025-12-26 13:49 UTC</div>
+Last updated: 2025-12-26 14:14 UTC</div>
 
-  <div class="grid">
-    <div class="col">
-      <h2>Saturday</h2>
-      <pre>Peak District  
-Rain: 0% (0%–0%) chance dry all day; brief light rain possible mainly eastern moors  
-Wind: 30 mph (25–40 mph) on tops; strong easterly, gusty, sudden buffeting  
-Temp: Valleys 4°C (0–7°C); summits 2°C (0–3°C) (feels like -8°C (-10–-6°C))  
-Cloud: Cloud base ~500 m (~400–600 m), often above hills but patchy/cloudy at times, thickening by afternoon  
-Freezing level: ~600 m (~400–600 m), above tops, rising during the day
+  <div class="days">
+    <div class="day">
+      <h2>Friday 26th December</h2>
+      <pre><b>Peaks</b>
+Rain: 0%
+Valley wind: E 11 to 20 mph
+Hill wind: E 25 to 40 mph, gusts to 45 mph
+Valley temp: 0 to 5°C
+Hill temp: 0 to 1°C
+Cloud base: 400 to 600 m, mainly above tops
+Freezing level: 400 to 600 m
 
-Snowdonia  
-Rain: 0% (0–10%) chance Dry; odd brief spot of light rain possible mainly east  
-Wind: 40 mph (30–47 mph) on tops Gale force easterly, very gusty, risk sudden buffeting  
-Temp: Valleys 4°C (3–5°C); summits -2°C (-2 to 3°C) (feels like -10°C (-13 to -10°C))  
-Cloud: Cloud base ~600 m (~400–700 m), patchy banks, most persistent south and east; tops often clear west  
-Freezing level: ~400 m (~300–700 m), some terrain partly frozen; above freezing on some western slopes
+<b>Snowdon</b>
+Rain: 0%
+Valley wind: E 15 to 22 mph
+Hill wind: E 30 to 47 mph, gusts 50 to 60 mph
+Valley temp: 3 to 5°C
+Hill temp: -2 to -1°C, feels like -13 to -10°C
+Cloud base: 400 to 700m, best clear in north
+Freezing level: 300 to 500m
 
-Brecon Beacons  
-Rain: 0% (0%–0%) chance dry throughout, perhaps an odd light spot east  
-Wind: 30 mph (18–45 mph) on tops, strong/gusty easterly, sudden buffeting  
-Temp: Valleys -1°C (-1–5°C); summits 1°C (-2–3°C) (feels like -10°C (-10–-6°C))  
-Cloud: Cloud base ~600 m (400–700 m), extensive cloud banks at times, best clearer west  
-Freezing level: ~400 m (100–above summits), patchy frost valleys early, some upper slopes near freezing
+<b>Brecon</b>
+Rain: 0%
+Valley wind: NE to E 10 to 12 mph
+Hill wind: E to NE 18 to 40 mph, gusts 45 mph, gusty
+Valley temp: -1 rising to 5°C
+Hill temp: -2 to 3°C, feels like -15°C in wind
+Cloud base: 400 to 700m, higher tops clearer west
+Freezing level: 100 to 600m, some western slopes above
 
-Lake District  
-Rain: 0% (0–0%) chance Dry; rare, brief light rain or snow grains possible on higher NE slopes  
-Wind: 35 mph (25–40 mph) on tops Blustery easterly, frequent gusts, strong wind chill  
-Temp: Valleys 4°C (–1–6°C); summits 2°C (1–3°C) (feels like –6°C (–8– –5°C))  
-Cloud: Cloud base ~700 m (~500–700 m), patchy cloud mainly east/north above 700m; mostly clear in west  
-Freezing level: ~600 m (~400–700 m), some upper slopes/valleys near freezing early, rising above freezing many slopes</pre>
+<b>Lakes</b>
+Rain: 0%
+Valley wind: NE 2 to 8 mph
+Hill wind: E 25 to 40 mph, gusty
+Valley temp: -1 to 6°C
+Hill temp: 0 to 3°C
+Cloud base: 500 to 700 m east, often clear west
+Freezing level: 400 to 600 m, rising above summits in sun</pre>
     </div>
-    <div class="col">
-      <h2>Sunday</h2>
-      <pre>Peak District  
-Rain: 0% (0–0%) chance Dry all day  
-Wind: 20 mph (15–25 mph) on tops Blustery, gusts to 25 mph, noticeable wind chill  
-Temp: Valleys 5°C (3–6°C); summits 2°C (2–2°C) (feels like -5°C (-7–-5°C))  
-Cloud: Cloud base ~500 m (~400–600 m), mainly above tops, rare patches on highest tops  
-Freezing level: ~600 m (~400–600 m), around summit level, lowering slightly
+    <div class="day">
+      <h2>Saturday 27th December</h2>
+      <pre><b>Peaks</b>
+Rain: 0 to 10% brief east moors
+Valley wind: E 11 to 20 mph gusty
+Hill wind: E 25 to 35 mph gusts 35 to 45 mph
+Valley temp: 0 to 7C
+Hill temp: 0 to 3C, feels like -8C
+Cloud base: 400 to 600m, mostly above tops, more cloud later
+Freezing level: 400 to 600m rising above tops
 
-Snowdonia  
-Rain: 0% (0–0%) chance Dry all day  
-Wind: 42 mph (15–47 mph) on tops, strong/gusty easterly, marked wind chill  
-Temp: Valleys 4°C (4–5°C); summits -1°C (-2–0°C) (feels like -8°C (-13–8°C))  
-Cloud: Cloud base ~700 m (~500–700 m), patchy banks on upper slopes, tops likely clear, best toward west  
-Freezing level: ~600 m (~400–700 m), near/below freezing above 600–700 m, frost in some valleys
+<b>Snowdon</b>
+Rain: 0 to 20%
+Valley wind: E 15 to 22 mph
+Hill wind: E 30 to 47 mph, gusts 40 to 57 mph, gusty
+Valley temp: 3 to 5°C
+Hill temp: -2 to 3°C, wind chill to -13°C
+Cloud base: 400 to 700m, tops clearer in west
+Freezing level: 300 to 500m
 
-Brecon Beacons  
-Rain: 0% (0–0%) chance Dry all day  
-Wind: 25 mph (15–30 mph) on tops Blustery/gusty, marked wind chill  
-Temp: Valleys -1°C (-1–5°C); summits 0°C (0–3°C) (feels like -7°C (-7 to -7°C))  
-Cloud: Cloud base ~700 m (~400–700 m), occasional patches mainly east; mostly clear tops  
-Freezing level: ~600 m (~600–700 m), lowering, frost in valleys morning
+<b>Brecon</b>
+Rain: 0% to 10%
+Valley wind: NE to E 10 to 13 mph
+Hill wind: E 30 to 45 mph gusty
+Valley temp: -1 to 5 °C
+Hill temp: -2 to 3 °C
+Cloud base: 400 to 700 m, lower east; patchy
+Freezing level: 400 to 600 m, locally above tops
 
-Lake District  
-Rain: 0% (0%–0%) chance Dry all day.  
-Wind: 20 mph (10–32 mph) on tops, some gustiness around summits and high passes.  
-Temp: Valleys 4°C (3–6°C); summits 0°C (0–2°C) (feels like -7°C (–8 to –5°C))  
-Cloud: Cloud base ~700 m (~700–700 m), occasional patches east, mostly clear in west.  
-Freezing level: ~700 m (~600–700 m), near or just above summit level, frost in some valleys.</pre>
+<b>Lakes</b>
+Rain: 0% (very isolated drizzle possible)
+Valley wind: NE to E 2 to 8 mph
+Hill wind: E 25 to 40 mph gusty
+Valley temp: -1 rising to 6°C
+Hill temp: 1 to 3°C
+Cloud base: 500 to 700m east, mostly clear west
+Freezing level: 400 to 700m morning, above summits later</pre>
+    </div>
+    <div class="day">
+      <h2>Sunday 28th December</h2>
+      <pre><b>Peaks</b>
+Rain: 0%
+Valley wind: E 11 to 20 mph
+Hill wind: E 15 to 25 mph, gusts 25 mph
+Valley temp: 3 to 6°C
+Hill temp: 2°C
+Cloud base: 400 to 600 m, mostly above tops
+Freezing level: 400 to 600 m
+
+<b>Snowdon</b>
+Rain: 0%
+Valley wind: E 15 to 22 mph
+Hill wind: E 15 to 40 mph, gusts 50 to 60 mph
+Valley temp: 3 to 5°C
+Hill temp: -2 to -1°C
+Cloud base: 400 to 700m, highest tops above cloud at times
+Freezing level: 400 to 600m
+
+<b>Brecon</b>
+Rain: 0%
+Valley wind: E to NE 10 to 12 mph
+Hill wind: E to NE 15 to 25 mph, gusty
+Valley temp: -1 rising to 5°C
+Hill temp: 0°C
+Cloud base: 400 to 700 m, some tops above cloud
+Freezing level: 600 to 700 m
+
+<b>Lakes</b>
+Rain: 0%
+Valley wind: NE 2 to 8 mph
+Hill wind: E 10 to 30 mph
+Valley temp: -1 to 6°C
+Hill temp: 0 to 3°C
+Cloud base: 700m east, clear west
+Freezing level: 400 to 700m, frost in valleys</pre>
     </div>
   </div>
+
 </body>
 </html>
